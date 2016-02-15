@@ -9,10 +9,14 @@ import cloudreports.enums.VirtualMachineState;
 import cloudreports.event.CloudSimEvent;
 import cloudreports.event.CloudSimEventListener;
 import cloudreports.event.CloudSimEvents;
+import cloudreports.event.CloudsimObservable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
+
 
 /**
  *
@@ -21,7 +25,7 @@ import java.util.Map;
 public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListener {
 
     /**
-     * Holds the count current active allcoations on each VM
+     * Holds the count current active allocations on each VM
      */
     private Map<Integer, Integer> currentAllocationCounts;
     int currentDataCenterId;
@@ -29,6 +33,7 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
     public ActiveVmLoadBalancer(String name) throws Exception {
         super(name);
         this.currentDataCenterId = 0;
+        this.vmStatesList = vmStatesList;
         this.currentAllocationCounts = Collections.synchronizedMap(new HashMap<Integer, Integer>());
     }
 
@@ -39,7 +44,6 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
     @Override
     public int getNextAvailableVm() {
         int vmId = -1;
-
         //Find the vm with least number of allocations
         //If all available vms are not allocated, allocated the new ones
         if (currentAllocationCounts.size() < vmStatesList.size()) {
@@ -70,7 +74,7 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
 
     public void cloudSimEventFired(CloudSimEvent e) {
         if (e.getId() == CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM) {
-            int vmId = (Integer) e.getParameter("vm_id");
+            int vmId = (Integer) e.getParameter("vmId");
 
             Integer currCount = currentAllocationCounts.remove(vmId);
             if (currCount == null) {
@@ -82,7 +86,7 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
             currentAllocationCounts.put(vmId, currCount);
 
         } else if (e.getId() == CloudSimEvents.EVENT_VM_FINISHED_CLOUDLET) {
-            int vmId = (Integer) e.getParameter("vm_id");
+            int vmId = (Integer) e.getParameter("vmId");
             Integer currCount = currentAllocationCounts.remove(vmId);
             if (currCount != null) {
                 currCount--;
@@ -112,4 +116,5 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
         return getDatacenterIdsList();
     }
 
+    
 }

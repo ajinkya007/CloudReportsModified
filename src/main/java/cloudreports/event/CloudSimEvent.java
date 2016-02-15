@@ -3,8 +3,13 @@ package cloudreports.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import org.cloudbus.cloudsim.core.SimEvent;
 
-public class CloudSimEvent implements Serializable {
+/**
+ *
+ * @author AjinkyaWavare
+ */
+public class CloudSimEvent extends SimEvent implements Serializable {
 	private static final long serialVersionUID = 1710001127028361171L;
 	
 	private int id;

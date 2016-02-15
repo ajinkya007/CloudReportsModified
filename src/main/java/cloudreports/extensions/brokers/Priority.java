@@ -8,18 +8,25 @@ package cloudreports.extensions.brokers;
 import cloudreports.event.CloudSimEvent;
 import cloudreports.event.CloudSimEventListener;
 import cloudreports.event.CloudSimEvents;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.RowFilter.Entry;
+import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
 
 /**
  *
  * @author AjinkyaWavare
  */
-public class Priority extends Broker implements CloudSimEventListener{
-/**
-     * Holds the count current active allcoations on each VM
+public class Priority extends Broker implements CloudSimEventListener {
+
+    /**
+     * Holds the count current active allocations on each VM
      */
     private Map<Integer, Integer> currentAllocationCounts;
     int currentDataCenterId;
@@ -37,8 +44,7 @@ public class Priority extends Broker implements CloudSimEventListener{
     @Override
     public int getNextAvailableVm() {
         int vmId = -1;
-
-        //Find the vm with least number of allocations
+            //Find the vm with least number of allocations
         //If all available vms are not allocated, allocated the new ones
         if (currentAllocationCounts.size() < vmStatesList.size()) {
             for (int availableVmId : vmStatesList.keySet()) {

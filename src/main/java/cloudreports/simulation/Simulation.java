@@ -24,6 +24,7 @@ import cloudreports.dao.CustomerRegistryDAO;
 import cloudreports.dao.DatacenterRegistryDAO;
 import cloudreports.dao.SettingDAO;
 import cloudreports.database.HibernateUtil;
+import cloudreports.event.BaseCloudSimObservable;
 import cloudreports.extensions.PowerDatacenter;
 import cloudreports.gui.Dialog;
 import cloudreports.gui.MainView;
@@ -49,7 +50,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
  * @author      Thiago T. Sá
  * @since       1.0
  */
-public class Simulation implements Runnable {
+public class Simulation extends BaseCloudSimObservable implements Runnable {
 
     /** Indicates whether the simulations are over or not. */
     private static boolean terminated;

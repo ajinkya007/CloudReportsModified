@@ -11,6 +11,8 @@ import cloudreports.event.CloudSimEventListener;
 import cloudreports.event.CloudSimEvents;
 import java.util.Iterator;
 import java.util.List;
+import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
 
 /**
  *
