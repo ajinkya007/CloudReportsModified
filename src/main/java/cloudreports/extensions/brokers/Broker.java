@@ -23,6 +23,7 @@ import cloudreports.enums.BrokerPolicy;
 import cloudreports.enums.VirtualMachineState;
 import cloudreports.event.CloudSimEvent;
 import cloudreports.event.CloudSimEventListener;
+import cloudreports.event.CloudSimEvents;
 import cloudreports.event.CloudsimObservable;
 import cloudreports.models.CustomerRegistry;
 import cloudreports.utils.RandomNumberGenerator;
@@ -53,7 +54,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
      */
     private long maxLengthOfCloudlets;
     private List<CloudSimEventListener> listeners;
-    
+
     /**
      * The cloudlet id.
      */
@@ -157,6 +158,9 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         getCloudletReceivedList().add(cloudlet);
         Log.printLine(CloudSim.clock() + ": " + getName() + ": Cloudlet " + cloudlet.getCloudletId() + " received");
         cloudletsSubmitted -= 1;
+        CloudSimEvent e = new CloudSimEvent(CloudSimEvents.EVENT_VM_FINISHED_CLOUDLET);
+        e.addParameter("vmId", cloudlet.getVmId());
+        fireCloudSimEvent(e);
 
         Cloudlet newCloudlet = new Cloudlet(this.cloudletId,
                 (long) ((long) this.maxLengthOfCloudlets * RandomNumberGenerator.getRandomNumbers(1).get(0)),
@@ -206,6 +210,11 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
                 }
 
                 cloudletsSubmitted += 1;
+                //Notify load balancer
+                CloudSimEvent e = new CloudSimEvent(CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM);
+                e.addParameter("vmId", cloudletVm.getId());
+                fireCloudSimEvent(e);
+
                 getCloudletSubmittedList().add(cloudlet);
             } else { //The VM is not allocated yet, so postpone submission
                 Log.printLine(CloudSim.clock() + ": " + getName() + ": Postponing execution of cloudlet " + cloudlet.getCloudletId() + ": bount VM not available");

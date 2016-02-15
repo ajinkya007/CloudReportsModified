@@ -9,7 +9,7 @@ import org.cloudbus.cloudsim.core.SimEvent;
  *
  * @author AjinkyaWavare
  */
-public class CloudSimEvent extends SimEvent implements Serializable {
+public class CloudSimEvent implements Serializable {
 	private static final long serialVersionUID = 1710001127028361171L;
 	
 	private int id;
