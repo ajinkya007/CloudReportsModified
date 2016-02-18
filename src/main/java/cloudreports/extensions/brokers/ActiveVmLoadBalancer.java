@@ -32,6 +32,7 @@ public class ActiveVmLoadBalancer extends Broker implements CloudSimEventListene
 
     public ActiveVmLoadBalancer(String name) throws Exception {
         super(name);
+        addCloudSimEventListener(this);
         this.currentDataCenterId = 0;
         this.vmStatesList = vmStatesList;
         this.currentAllocationCounts = Collections.synchronizedMap(new HashMap<Integer, Integer>());

@@ -45,6 +45,7 @@ public class RoundRobinDatacenterBroker extends Broker {
     public RoundRobinDatacenterBroker(String name) throws Exception {
         super(name);
         this.currentId=0;
+        roundRobinDataCenter = 1;
     }
 
     /** 

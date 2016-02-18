@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.cloudbus.cloudsim.*;
@@ -49,20 +50,29 @@ import org.cloudbus.cloudsim.lists.VmList;
  */
 public abstract class Broker extends DatacenterBroker implements CloudsimObservable {
 
+    protected int roundRobinDataCenter = 0;
     /**
      * The maximum length of cloudlets assigned to this broker.
      */
     private long maxLengthOfCloudlets;
     private List<CloudSimEventListener> listeners;
-
     /**
      * The cloudlet id.
      */
     private int cloudletId;
-    Map<Integer, VirtualMachineState> vmStatesList;
+    /*
+    *Vm states list and Prioirty list
+     */
+    protected Map<Integer, VirtualMachineState> vmStatesList;
+    protected Map<Integer, Integer> vmPriority;
+    /**
+     * Holds the count of allocations for each VM
+     */
+    protected Map<Integer, Integer> vmAllocationCounts;
 
-    Map<Integer, Integer> vmPriority;
-
+    /*
+    *GCD calculations of various attributes of the Virtual Machines
+     */
     int gcdRam;
     int gcdNumberOfPes;
     double gcdMips;
@@ -76,11 +86,40 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
     }
 
     /**
+     * An abstract method whose implementations must return an id of a
+     * datacenter.
+     *
+     * @return the id of a datacenter.
+     * @since 1.0
+     */
+    public abstract int getDatacenterId();
+
+    /**
+     * An abstract method whose implementations must return a list of ids from
+     * datacenters managed by the broker.
+     *
+     * @return a list of ids from datacenters managed by this broker.
+     * @since 1.0
+     */
+    public abstract List<Integer> getDatacenterIdList();
+
+    /**
+     * The main contract of {@link VmLoadBalancer}. All load balancers should
+     * implement this method according to their specific load balancing policy.
+     *
+     * @return id of the next available Virtual Machine to which the next task
+     * should be allocated
+     */
+    abstract public int getNextAvailableVm();
+
+    /**
      * Initializes a new instance of this class with the given name.
      *
      * @param name the name of the broker.
      * @since 1.0
      */
+    public int totalVm;
+
     public Broker(String name) throws Exception {
         super(name);
         listeners = new ArrayList<CloudSimEventListener>();
@@ -89,8 +128,10 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         this.cloudletId = cr.getUtilizationProfile().getNumOfCloudlets();
         this.maxLengthOfCloudlets = cr.getUtilizationProfile().getLength();
         vmStatesList = Collections.synchronizedMap(new HashMap<Integer, VirtualMachineState>());
+        vmPriority = new HashMap<Integer, Integer>();
         vmAllocationCounts = new HashMap<Integer, Integer>();
-
+        //Log.printLine(crDAO.getNumOfVms(cr.getId()));
+        totalVm = crDAO.getNumOfVms(cr.getId());
     }
 
     /**
@@ -123,11 +164,15 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         int datacenterId = data[0];
         int vmId = data[1];
         int result = data[2];
-        Log.printLine(ev.toString());
+        //Log.printLine(ev.toString());
         if (result == CloudSimTags.TRUE) {
             getVmsToDatacentersMap().put(vmId, datacenterId);
             getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
             vmStatesList.put(vmId, VirtualMachineState.AVAILABLE);
+            if (getVmsCreatedList().size() == totalVm) {
+                CloudSimEvent e = new CloudSimEvent(CloudSimEvents.EVENT_ALL_VM_CREATED);
+                fireCloudSimEvent(e);
+            }
             Log.printLine(CloudSim.clock() + ": " + getName() + ": VM #" + vmId + " has been created in " + getDatacenterCharacteristicsList().get(datacenterId).getResourceName() + ", Host #" + VmList.getById(getVmsCreatedList(), vmId).getHost().getId() + " " + vmStatesList.get(vmId));
         } else {
             Log.printLine(CloudSim.clock() + ": " + getName() + ": Creation of VM #" + vmId + " failed in " + getDatacenterCharacteristicsList().get(datacenterId).getResourceName());
@@ -186,8 +231,15 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
     protected void submitCloudlets() {
 
         for (Cloudlet cloudlet : getCloudletList()) {
-            //if (cloudlet.getVmId() == -1) { //If user didn't bind this cloudlet and it has not been executed yet
-            cloudlet.setVmId(getNextAvailableVm());
+
+            if (roundRobinDataCenter == 1) {
+                if (cloudlet.getVmId() == -1) { //If user didn't bind this cloudlet and it has not been executed yet
+                    cloudlet.setVmId(getVmsCreatedList().get(0).getId());
+                }
+            } //if (cloudlet.getVmId() == -1) { //If user didn't bind this cloudlet and it has not been executed yet
+            else {
+                cloudlet.setVmId(getNextAvailableVm());
+            }
             //}
 
             //Check if the cloudlet VM has been allocated
@@ -273,38 +325,6 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
     public void removeCloudSimEventListener(CloudSimEventListener l) {
         listeners.remove(l);
     }
-
-    /**
-     * An abstract method whose implementations must return an id of a
-     * datacenter.
-     *
-     * @return the id of a datacenter.
-     * @since 1.0
-     */
-    public abstract int getDatacenterId();
-
-    /**
-     * An abstract method whose implementations must return a list of ids from
-     * datacenters managed by the broker.
-     *
-     * @return a list of ids from datacenters managed by this broker.
-     * @since 1.0
-     */
-    public abstract List<Integer> getDatacenterIdList();
-
-    /**
-     * Holds the count of allocations for each VM
-     */
-    protected Map<Integer, Integer> vmAllocationCounts;
-
-    /**
-     * The main contract of {@link VmLoadBalancer}. All load balancers should
-     * implement this method according to their specific load balancing policy.
-     *
-     * @return id of the next available Virtual Machine to which the next task
-     * should be allocated
-     */
-    abstract public int getNextAvailableVm();
 
     /**
      * Used internally to update VM allocation statistics. Should be called by
@@ -410,7 +430,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
      *
      * @param map
      */
-    public void sortHashMapByValue(final HashMap<Integer, Integer> map) {
+    public LinkedHashMap<Integer, Integer> sortHashMapByValue(final HashMap<Integer, Integer> map) {
         ArrayList<Integer> keys = new ArrayList<Integer>();
         keys.addAll(map.keySet());
         Collections.sort(keys, new Comparator<Integer>() {
@@ -422,19 +442,23 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
                     return (val2 != null) ? 1 : 0;
                 } else if ((val1 != null)
                         && (val2 != null)) {
-                    return val1.compareTo(val2);
+                    return val2.compareTo(val1);
                 } else {
                     return 0;
                 }
             }
         });
-
+        LinkedHashMap<Integer, Integer> sortedMap;
+        sortedMap = new LinkedHashMap<Integer, Integer>();
         for (Integer key : keys) {
             Integer c = map.get(key);
             if (c != null) {
-                Log.printLine("key:" + key + ", CustomData:" + c.toString());
+                //Log.printLine("key:" + key + ", CustomData:" + c.toString());
+                sortedMap.put(key, c);
             }
         }
+        //Log.printLine(sortedMap.toString() + " sortedmap");
+        return sortedMap;
     }
 
 }

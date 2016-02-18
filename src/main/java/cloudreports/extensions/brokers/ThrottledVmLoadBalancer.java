@@ -25,6 +25,7 @@ public class ThrottledVmLoadBalancer extends Broker implements CloudSimEventList
     public ThrottledVmLoadBalancer(String name) throws Exception {
         super(name);
         this.currentDataCenterId = 0;
+        addCloudSimEventListener(this);
     }
 
     @Override
@@ -72,10 +73,10 @@ public class ThrottledVmLoadBalancer extends Broker implements CloudSimEventList
 
     public void cloudSimEventFired(CloudSimEvent e) {
         if (e.getId() == CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM) {
-            int vmId = (Integer) e.getParameter("vm_id");
+            int vmId = (Integer) e.getParameter("vmId");
             vmStatesList.put(vmId, VirtualMachineState.BUSY);
         } else if (e.getId() == CloudSimEvents.EVENT_VM_FINISHED_CLOUDLET) {
-            int vmId = (Integer) e.getParameter("vm_id");
+            int vmId = (Integer) e.getParameter("vmId");
             vmStatesList.put(vmId, VirtualMachineState.AVAILABLE);
         }
     }
