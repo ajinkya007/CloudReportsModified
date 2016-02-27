@@ -51,32 +51,12 @@ public class Priority extends Broker implements CloudSimEventListener {
             //Find the vm with least number of allocations
         //If all available vms are not allocated, allocated the new ones
         for (Integer vmid : vmPriority.keySet()){
+            //Log.printLine(vmPriority.get(vmid) + " " + vmStatesList.get(vmid));
             if(vmStatesList.get(vmid) == VirtualMachineState.AVAILABLE){
                 vmId = vmid;
-                Log.printLine("VMID with priority is given. :"  + vmPriority.get(vmid) + " " + vmid );
+                //Log.printLine("VMID with priority is given. :"  + vmPriority.get(vmid) + " " + vmid );
             }
         }
-        /*
-        if (currentAllocationCounts.size() < vmStatesList.size()) {
-            for (int availableVmId : vmStatesList.keySet()) {
-                if (!currentAllocationCounts.containsKey(availableVmId)) {
-                    vmId = availableVmId;
-                    break;
-                }
-            }
-        } else {
-            int currCount;
-            int minCount = Integer.MAX_VALUE;
-
-            for (int thisVmId : currentAllocationCounts.keySet()) {
-                currCount = currentAllocationCounts.get(thisVmId);
-                if (currCount < minCount) {
-                    minCount = currCount;
-                    vmId = thisVmId;
-                }
-            }
-        }
-*/
         allocatedVm(vmId);
 
         return vmId;
@@ -84,26 +64,6 @@ public class Priority extends Broker implements CloudSimEventListener {
     }
 
     public void cloudSimEventFired(CloudSimEvent e) {
-        /*if (e.getId() == CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM) {
-            int vmId = (Integer) e.getParameter("vmId");
-
-            Integer currCount = currentAllocationCounts.remove(vmId);
-            if (currCount == null) {
-                currCount = 1;
-            } else {
-                currCount++;
-            }
-
-            currentAllocationCounts.put(vmId, currCount);
-
-        } else if (e.getId() == CloudSimEvents.EVENT_VM_FINISHED_CLOUDLET) {
-            int vmId = (Integer) e.getParameter("vmId");
-            Integer currCount = currentAllocationCounts.remove(vmId);
-            if (currCount != null) {
-                currCount--;
-                currentAllocationCounts.put(vmId, currCount);
-            }
-        } */
         if (e.getId() == CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM) {
             int vmId = (Integer) e.getParameter("vmId");
             vmStatesList.put(vmId, VirtualMachineState.BUSY);
@@ -114,7 +74,7 @@ public class Priority extends Broker implements CloudSimEventListener {
             calculatePriority();
             LinkedHashMap<Integer, Integer> vmSortedPriority = sortHashMapByValue((HashMap<Integer, Integer>) vmPriority);
             for (Map.Entry<Integer, Integer> entry : vmSortedPriority.entrySet()) {
-                Log.printLine(entry.getKey()+" : "+entry.getValue() + " Aj");
+                //Log.printLine(entry.getKey()+" : "+entry.getValue() + " Aj");
             }
         }
 

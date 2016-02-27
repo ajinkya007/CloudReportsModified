@@ -208,7 +208,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         fireCloudSimEvent(e);
 
         Cloudlet newCloudlet = new Cloudlet(this.cloudletId,
-                (long) ((long) this.maxLengthOfCloudlets * RandomNumberGenerator.getRandomNumbers(1).get(0)),
+                (long) ((long) this.maxLengthOfCloudlets * 1.0 /*RandomNumberGenerator.getRandomNumbers(1).get(0)*/),
                 cloudlet.getNumberOfPes(),
                 cloudlet.getCloudletLength(),
                 cloudlet.getCloudletOutputSize(),
@@ -269,7 +269,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
 
                 getCloudletSubmittedList().add(cloudlet);
             } else { //The VM is not allocated yet, so postpone submission
-                Log.printLine(CloudSim.clock() + ": " + getName() + ": Postponing execution of cloudlet " + cloudlet.getCloudletId() + ": bount VM not available");
+                //Log.printLine(CloudSim.clock() + ": " + getName() + ": Postponing execution of cloudlet " + cloudlet.getCloudletId() + ": bount VM not available");
             }
         }
 
@@ -421,7 +421,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         for (Vm vm : getVmsCreatedList()) {
             int priority = (int) (vm.getRam() / gcdRam + vm.getNumberOfPes() / gcdNumberOfPes + vm.getMips() / gcdMips);
             vmPriority.put(vm.getId(), priority);
-            Log.printLine("Priority : " + vm.getId() + " " + priority);
+            //Log.printLine("Priority : " + vm.getId() + " " + priority);
         }
     }
 
