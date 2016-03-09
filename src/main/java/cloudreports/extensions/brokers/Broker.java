@@ -185,9 +185,9 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
         } else if (getVmsRequested() == getVmsAcks()) { // all the acks received, but some VMs were not created
             createVmsInDatacenter(getDatacenterIdList());
 
-            if (getVmsCreatedList().size() > 0) { //if some vm were created
+            /*if (getVmsCreatedList().size() > 0) { //if some vm were created
                 submitCloudlets();
-            }
+            }*/
         }
     }
 
@@ -201,24 +201,33 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
     protected void processCloudletReturn(SimEvent ev) {
         Cloudlet cloudlet = (Cloudlet) ev.getData();
         getCloudletReceivedList().add(cloudlet);
-        Log.printLine(CloudSim.clock() + ": " + getName() + ": Cloudlet " + cloudlet.getCloudletId() + " received");
+        //Log.printLine(CloudSim.clock() + ": " + getName() + ": Cloudlet " + cloudlet.getCloudletId() + " received");
         cloudletsSubmitted -= 1;
         CloudSimEvent e = new CloudSimEvent(CloudSimEvents.EVENT_VM_FINISHED_CLOUDLET);
         e.addParameter("vmId", cloudlet.getVmId());
         fireCloudSimEvent(e);
-
-        Cloudlet newCloudlet = new Cloudlet(this.cloudletId,
-                (long) ((long) this.maxLengthOfCloudlets * 1.0 /*RandomNumberGenerator.getRandomNumbers(1).get(0)*/),
-                cloudlet.getNumberOfPes(),
-                cloudlet.getCloudletLength(),
-                cloudlet.getCloudletOutputSize(),
-                cloudlet.getUtilizationModelCpu(),
-                cloudlet.getUtilizationModelRam(),
+        boolean setCloudletLength = cloudlet.setCloudletLength(maxLengthOfCloudlets);
+        if (setCloudletLength == true) {
+            Cloudlet newCloudlet = new Cloudlet(this.cloudletId,
+                    (long) ((long) this.maxLengthOfCloudlets * 1.0 /*RandomNumberGenerator.getRandomNumbers(1).get(0)*/),
+                    cloudlet.getNumberOfPes(),
+                    cloudlet.getCloudletLength(),
+                    cloudlet.getCloudletOutputSize(),
+                    cloudlet.getUtilizationModelCpu(),
+                    cloudlet.getUtilizationModelRam(),
+                    cloudlet.getUtilizationModelBw());
+            /*
+            Log.printLine( " CLoudlet attributes: Number of PE: "+cloudlet.getNumberOfPes() +  " Cloudlet length: " +cloudlet.getCloudletLength() + " output size: " +
+                cloudlet.getCloudletOutputSize() + " util cpu: " +
+                cloudlet.getUtilizationModelCpu() + " util ram: " +
+                cloudlet.getUtilizationModelRam() +" util bw: " +
                 cloudlet.getUtilizationModelBw());
-        newCloudlet.setUserId(getId());
-        newCloudlet.setVmId(cloudlet.getVmId());
-        getCloudletList().add(newCloudlet);
-        this.cloudletId++;
+            */ 
+            newCloudlet.setUserId(getId());
+            newCloudlet.setVmId(cloudlet.getVmId());
+            getCloudletList().add(newCloudlet);
+            this.cloudletId++;
+        }
         submitCloudlets();
     }
 
@@ -252,7 +261,7 @@ public abstract class Broker extends DatacenterBroker implements CloudsimObserva
 
             //If the VM is allocated, send cloudlet
             if (cloudletVm != null) {
-                Log.printLine(CloudSim.clock() + ": " + getName() + ": Sending cloudlet " + cloudlet.getCloudletId() + " to VM #" + cloudletVm.getId());
+                //Log.printLine(CloudSim.clock() + ": " + getName() + ": Sending cloudlet " + cloudlet.getCloudletId() + " to VM #" + cloudletVm.getId());
                 cloudlet.setVmId(cloudletVm.getId());
 
                 try {

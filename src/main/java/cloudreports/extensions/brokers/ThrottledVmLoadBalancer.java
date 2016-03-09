@@ -29,27 +29,6 @@ public class ThrottledVmLoadBalancer extends Broker implements CloudSimEventList
     }
 
     @Override
-    public int getDatacenterId() {
-        currentDataCenterId++;
-        if (currentDataCenterId >= vmStatesList.size()) {
-            currentDataCenterId = 0;
-        }
-        int index = currentDataCenterId % getDatacenterIdsList().size();
-        return getDatacenterIdsList().get(index);
-    }
-
-    /**
-     * Gets a list of ids from datacenters managed by this broker.
-     *
-     * @return a list of datacenter ids.
-     * @since 1.0
-     */
-    @Override
-    public List<Integer> getDatacenterIdList() {
-        return getDatacenterIdsList();
-    }
-
-    @Override
     public int getNextAvailableVm() {
         int vmId = -1;
 
@@ -81,4 +60,26 @@ public class ThrottledVmLoadBalancer extends Broker implements CloudSimEventList
         }
     }
 
+    @Override
+    public int getDatacenterId() {
+        currentDataCenterId++;
+        if (currentDataCenterId >= vmStatesList.size()) {
+            currentDataCenterId = 0;
+        }
+        int index = currentDataCenterId % getDatacenterIdsList().size();
+        return getDatacenterIdsList().get(index);
+    }
+
+    /**
+     * Gets a list of ids from datacenters managed by this broker.
+     *
+     * @return a list of datacenter ids.
+     * @since 1.0
+     */
+    @Override
+    public List<Integer> getDatacenterIdList() {
+        return getDatacenterIdsList();
+    }
+
+    
 }

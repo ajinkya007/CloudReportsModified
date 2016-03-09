@@ -52,7 +52,7 @@ public class CloudletSchedulerDynamicWorkload extends org.cloudbus.cloudsim.Clou
      */      
     @Override
     public double getEstimatedFinishTime(ResCloudlet rcl, double time) {
-        return time + ((rcl.getRemainingCloudletLength()) / getTotalMips());
+        return time + ((rcl.getRemainingCloudletLength()) / /*getTotalCurrentAllocatedMipsForCloudlet(rcl, time)*/ getTotalMips()/**/);
     }
     
 }

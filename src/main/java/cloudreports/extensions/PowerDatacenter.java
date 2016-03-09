@@ -87,7 +87,7 @@ public class PowerDatacenter extends org.cloudbus.cloudsim.power.PowerDatacenter
             double timeDiff = currentTime - getLastProcessTime();
             double minTime = Double.MAX_VALUE;
 
-            Log.printLine("\n");
+            //Log.printLine("\n");
 
             for (PowerHost host : this.<PowerHost>getHostList()) {
                 double hostPower = 0.0;
