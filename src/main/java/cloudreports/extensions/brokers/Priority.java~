@@ -78,7 +78,7 @@ public class Priority extends Broker implements CloudSimEventListener {
         return vmId;
 
     }
-    //Cloud Listener Functions
+
     public void cloudSimEventFired(CloudSimEvent e) {
         if (e.getId() == CloudSimEvents.EVENT_CLOUDLET_ALLOCATED_TO_VM) {
             int vmId = (Integer) e.getParameter("vmId");
